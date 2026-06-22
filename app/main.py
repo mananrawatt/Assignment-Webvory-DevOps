@@ -3,6 +3,7 @@ from database import test_db
 from redis_client import test_redis
 from logger import logger
 from prometheus_fastapi_instrumentator import Instrumentator
+import requests
 
 app = FastAPI()
 
@@ -41,3 +42,30 @@ def ai_health():
         "provider": "OpenAI Compatible",
         "status": "available"
     }
+
+@app.get("/ai-health")
+def ai_health():
+    try:
+        response = requests.get(
+            "http://host.docker.internal:11434/api/tags",
+            timeout=5
+        )
+
+        if response.status_code == 200:
+            models = response.json().get("models", [])
+
+            return {
+                "status": "ready",
+                "provider": "Ollama",
+                "models_available": len(models)
+            }
+
+        return {
+            "status": "unavailable"
+        }
+
+    except Exception as e:
+        return {
+            "status": "unavailable",
+            "error": str(e)
+        }
