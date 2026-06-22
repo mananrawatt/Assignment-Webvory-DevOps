@@ -1,0 +1,30 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build FastAPI Image
+        run: |
+          docker build -t ai-backend-assignment .
+
+      - name: Validate Docker Compose
+        run: |
+          docker compose config
+
+      - name: Success
+        run: echo "Pipeline completed successfully"
